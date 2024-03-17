@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mariadb-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mariadb
+  template:
+    metadata:
+      labels:
+        app: mariadb
+    spec:
+      containers:
+      - name: mariadb
+        image: mariadb:latest
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mariadb-root-password
+              key: root-password
+        ports:
+        - containerPort: 3306
+        volumeMounts:
+        - name: mariadb-init-script
+          mountPath: /docker-entrypoint-initdb.d
+        - name: mariadb-pvc
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mariadb-init-script
+        configMap:
+          name: mariadb-init-script
+      - name: mariadb-pvc
+        persistentVolumeClaim:
+          claimName: mariadb-pvc
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mariadb-root-password
+type: Opaque
+data:
+  root-password: ZWNvbXBhc3N3b3Jk
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mariadb-init-script
+data:
+  db-load-script.sql: |
+    -- Create the database and user
+    CREATE DATABASE IF NOT EXISTS ecomdb;
+    GRANT ALL ON ecomdb.* TO 'ecomuser'@'%' IDENTIFIED BY 'ecompassword';
+    FLUSH PRIVILEGES;
+
+    -- Use the database
+    USE ecomdb;
+
+    -- Create table
+    CREATE TABLE IF NOT EXISTS products (
+      id mediumint(8) unsigned NOT NULL auto_increment,
+      Name varchar(255) default NULL,
+      Price varchar(255) default NULL,
+      ImageUrl varchar(255) default NULL,
+      PRIMARY KEY (id)
+    ) AUTO_INCREMENT = 1;
+
+    -- Insert initial data
+    INSERT INTO products (Name, Price, ImageUrl)
+    VALUES
+      ("Laptop", "100", "c-1.png"),
+      ("Drone", "200", "c-2.png"),
+      ("VR", "300", "c-3.png"),
+      ("Tablet", "50", "c-5.png"),
+      ("Watch", "90", "c-6.png"),
+      ("Phone Covers", "20", "c-7.png"),
+      ("Phone", "80", "c-8.png"),
+      ("Laptop", "150", "c-4.png");
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-service
+spec:
+  selector:
+    app: mariadb
+  ports:
+  - protocol: TCP
+    port: 3306
+    targetPort: 3306
+---
+# pvc.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mariadb-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi  # Adjust the size based on your requirements

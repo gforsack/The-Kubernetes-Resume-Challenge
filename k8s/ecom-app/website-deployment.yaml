@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ecom-app
+  name: ecom-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecom-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ecom-app
+    spec:
+      containers:
+      - image: gforsack/ecom-web:v1
+        name: ecom-app
+        envFrom:
+        - secretRef:
+            name: db-credentials
+        - configMapRef:
+            name: feature-toggle-config
+        resources: {}
+        imagePullPolicy: Always
+status: {}
+---
+apiVersion: v1
+data:
+  FEATURE_DARK_MODE: "false"
+kind: ConfigMap
+metadata:
+  name: feature-toggle-config
+---
+apiVersion: v1
+data:
+  DB_HOST: "bXlzcWwtc2VydmljZQo="
+  DB_NAME: "ZWNvbWRiCg=="
+  DB_PASSWORD: "ZWNvbXBhc3N3b3JkCg=="
+  DB_PORT: "MzMwNgo="
+  DB_USER: "ZWNvbXVzZXIK"
+kind: Secret
+metadata:
+  name: db-credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ecom-app
+  name: website-service
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: ecom-app
+  type: LoadBalancer
+status:
+  loadBalancer: {}
