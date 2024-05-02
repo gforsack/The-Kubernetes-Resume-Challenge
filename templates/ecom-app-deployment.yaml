@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ecom-app
+  name: ecom-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ecom-app
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ecom-app
+    spec:
+      containers:
+      - image: gforsack/ecom-web:v1
+        name: ecom-app
+        envFrom:
+        - secretRef:
+            name: db-credentials
+        - configMapRef:
+            name: feature-toggle-config
+        resources: {}
+        imagePullPolicy: Always
+status: {}

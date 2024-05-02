@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-website
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: website
+  template:
+    metadata:
+      labels:
+        app: website
+    spec:
+      containers:
+      - name: website
+        image: {{ .Values.website.image }}
+        envFrom:
+        - configMapRef:
+            name: {{ .Release.Name }}-db-credentials
+        - configMapRef:
+            name: {{ .Release.Name }}-feature-toggle-config
+        ports:
+        - containerPort: 80
