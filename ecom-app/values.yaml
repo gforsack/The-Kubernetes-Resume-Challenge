@@ -1,4 +1,23 @@
-# # Default values for ecom-app.
+db:
+  rootPassword: "ZWNvbXBhc3N3b3Jk"  # Base64 encoded root password for MariaDB
+  database: "ecomdb"
+  username: "ecomuser"
+  password: "ecompassword"
+  storageSize: "5Gi"  # Adjust the size based on your requirements
+  service:
+    type: "ClusterIP"
+    port: 3306
+
+website:
+  image: "gforsack/ecom-web:v2"
+  service:
+    type: "LoadBalancer"  # Service type for the website service
+    port: 80
+  dark_mode: false
+
+
+
+  # # Default values for ecom-app.
 # # This is a YAML-formatted file.
 # # Declare variables to be passed into your templates.
 
@@ -105,21 +124,3 @@
 # tolerations: []
 
 # affinity: {}
-
-
-db:
-  rootPassword: "ZWNvbXBhc3N3b3Jk"  # Base64 encoded root password for MariaDB
-  database: "ecomdb"
-  username: "ecomuser"
-  password: "ecompassword"
-  storageSize: "5Gi"  # Adjust the size based on your requirements
-  service:
-    type: "ClusterIP"
-    port: 3306
-
-website:
-  image: "gforsack/ecom-web:v2"
-  service:
-    type: "LoadBalancer"  # Service type for the website service
-    port: 80
-  dark_mode: false
